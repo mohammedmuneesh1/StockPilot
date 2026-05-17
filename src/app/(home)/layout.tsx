@@ -1,0 +1,23 @@
+import Header from "@/components/custom/Header";
+
+
+
+const HomeLayout =({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>)=> {
+  return (
+  <main className="min-h-screen text-gray-400">
+
+    {/* HEADER */}
+    <Header/>
+    
+    <div className="container py-10">
+{children}
+    </div>
+
+  </main>
+  );
+}
+export default HomeLayout;
