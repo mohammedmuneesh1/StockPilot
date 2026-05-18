@@ -1,3 +1,5 @@
+"use client"
+
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
@@ -27,7 +29,7 @@ height={32}
 {/*LARGE SCREEN NAV END */}
 
 {/*SMALL SCREEN NAV START */}
-<div className="sm:hidden block">
+<div className="block">
 <UserDropDown/>
 </div>
 {/*SMALL SCREEN NAV END */}
