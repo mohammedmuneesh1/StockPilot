@@ -1,0 +1,78 @@
+react-hook-form helps developers:
+
+*) manage form data
+*) validate inputs
+*) handle form submission
+*) reduce re-renders
+*) write less boilerplate code
+
+
+lightweight and fast
+easy validation
+TypeScript support
+better performance than many older form libraries
+works well with libraries like Zod and Yup
+
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: { errors, isSubmitting },
+    } = useForm<SignUpFormData>({
+        defaultValues: {
+            fullName: '',
+            email: '',
+            password: '',
+            country: 'US',
+            investmentGoals: 'Growth',
+            riskTolerance: 'Medium',
+            preferredIndustry: 'Technology'
+        },
+        mode: 'onBlur'
+    }, );
+
+
+
+
+
+
+
+
+i) register
+
+ is one of the most important things in react-hook-form.
+It connects your input field to the form system.
+
+
+<input {...register("email")} />
+
+react-hook-form:
+
+tracks the input value
+tracks validation
+tracks touched state
+tracks errors
+includes it in submit data
+connects it to form state
+
+
+<input {...register("email")} />
+
+<input {...register("password")} />
+
+     {...register(name, validation)}
+
+
+
+
+ii) What control actually is
+
+It is an internal object created by useForm() that manages:
+
+field state
+subscriptions
+updates
+controlled components
+
+You pass it into Controller.

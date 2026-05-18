@@ -43,3 +43,14 @@ TRADING VIEW
 ------------------------------------------------------------ 
 
 TradingView -> for chart 
+
+react hook form ---> npm install react-hook-form
+
+
+react-select-country-list-> npm i react-select-country-list
+npx shadcn@latest add input label select 
+
+
+
+
+

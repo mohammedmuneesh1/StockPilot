@@ -1,0 +1,23 @@
+This code:
+
+const result = await setTimeout(() => {
+    return {
+        success: true
+    }
+}, 300);
+
+is fundamentally wrong.
+
+setTimeout() returns:
+
+a timer ID
+
+NOT:
+
+{ success: true }
+
+So result.success becomes:
+
+undefined
+
+JavaScript timers are ancient chaotic browser APIs stitched together with optimism and caffeine.
