@@ -6,7 +6,18 @@ import React from 'react'
 import NavItems from './NavItems'
 import UserDropDown from './UserDropDown'
 
-const Header = () => {
+
+interface HeaderInterface {
+  user:{
+    id:string,
+    name:string,
+    email:string
+  } | null;
+}
+const Header:React.FC<HeaderInterface> = ({user}) => {
+  
+
+  
   return (
     <div className='sticky top-0 header'>
         <div className="container header-wrapper"> 
@@ -30,7 +41,9 @@ height={32}
 
 {/*SMALL SCREEN NAV START */}
 <div className="block">
-<UserDropDown/>
+<UserDropDown
+user={user}
+/>
 </div>
 {/*SMALL SCREEN NAV END */}
 

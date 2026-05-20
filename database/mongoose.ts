@@ -4,7 +4,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 declare global {
     var mongooseCache:{
-        conn: typeof mongoose | null ;
+        conn: typeof mongoose | null ; //⚠️ CONN MEANS CONNECTION
         promise: Promise<typeof mongoose> | null;
     }
 }
@@ -39,10 +39,10 @@ export const connectToDatabase = async () => {
 
     console.log(`Connected to MongoDB ${process.env.NODE_ENV}`);
     return cached.conn;
-
-
 } 
 
+
+//global is another versio nof window. wherre it is a global variable
 
 // Main purpose of this code
 
@@ -115,3 +115,71 @@ export const connectToDatabase = async () => {
 //         promise: null
 //     }
 // }
+
+
+
+
+
+
+// "global object will have a property called mongooseCache"
+
+// This is purely:
+
+// type declaration
+// compile-time information
+// TypeScript only
+
+
+
+
+
+
+
+// This:
+// global.mongooseCache = {
+//    conn: null,
+//    promise: null
+// }
+// is TYPE declaration.
+
+
+
+// creates the REAL variable/value at runtime.
+
+// declare global {
+//    var mongooseCache: string;
+// }
+
+// means:
+
+// "Trust me TS, this property exists somewhere."
+
+
+// Without declare global:
+
+// global.mongooseCache
+
+// causes TS error:
+
+// Property 'mongooseCache' does not exist on type 'globalThis'
+
+
+// So the flow is:
+// Step 1
+
+// Tell TypeScript:
+
+// declare global {
+//    var mongooseCache: ...
+// }
+
+
+// Simple analogy
+
+// declare global
+// =
+// adding new fields to TypeScript's knowledge
+
+// global.mongooseCache = ...
+// =
+// actual runtime object creation

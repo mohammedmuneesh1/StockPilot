@@ -21,3 +21,106 @@ So result.success becomes:
 undefined
 
 JavaScript timers are ancient chaotic browser APIs stitched together with optimism and caffeine.
+
+
+
+
+
+
+
+
+
+// 2) 
+
+┌──────────────────────────────┐
+│ User Fills Sign-up Form      │
+│                              │
+│ • Name/Email                 │
+│ • Password                   │
+│ • Country                    │
+│ • Investment Preferences     │
+└──────────────┬───────────────┘
+               │ Submit
+               ▼
+┌──────────────────────────────┐
+│ Better Auth API              │
+│                              │
+│ • Create user                │
+│ • Hash password              │
+│ • Set session                │
+│ • Auto sign-in               │
+└──────────────┬───────────────┘
+               │ Success
+               ▼
+┌──────────────────────────────┐
+│ User Redirected to Dashboard │
+│ (Immediate)                  │
+└──────────────────────────────┘
+
+
+               ┌──────────────────────────────┐
+               │ Inngest Event                │
+               │ 'app/user.created'           │
+               └──────────────┬───────────────┘
+                              │ Async
+                              ▼
+               ┌──────────────────────────────┐
+               │ AI Generates Personalized    │
+               │ Welcome Intro                │
+               └──────────────┬───────────────┘
+                              ▼
+               ┌──────────────────────────────┐
+               │ Send Welcome Email via       │
+               │ Nodemailer                   │
+               │ (Background)                 │
+               └──────────────────────────────┘
+
+
+
+
+
+
+//3 destructuring assignment
+
+            
+const { data: { email, name } } = event
+first destructing data from event, then destructuring email and name from data. This is a common pattern in JavaScript to extract nested properties in one step, making the code cleaner and more concise.
+
+
+
+
+
+//better-auth sign-in flow:
+
+
++----------------------+
+| User Fills           |
+| Sign-in Form         |
+|                      |
+| • Email              |
+| • Password           |
++----------------------+
+           |
+           | Submit
+           v
++----------------------+
+| Better Auth API      |
+|                      |
+| • Validate user      |
+| • Check password     |
+| • Create session     |
+| • Set cookies        |
++----------------------+
+           |
+           v
+      +---------+
+      | Success?|
+      +---------+
+        /     \
+      Yes      No
+       |        |
+       v        v
++----------------------+   +----------------------+
+| Redirect to          |   | Show Error          |
+| Dashboard            |   | Toast Message       |
++----------------------+   +----------------------+

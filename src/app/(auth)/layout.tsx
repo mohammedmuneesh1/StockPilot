@@ -1,5 +1,8 @@
+import { auth } from "@/lib/better-auth/auth";
+import { headers } from "next/headers";
 import Image from "next/image"
 import Link from "next/link"
+import { redirect } from "next/navigation";
 
 
 
@@ -13,6 +16,11 @@ import Link from "next/link"
 
 
  const Layout = async ({ children }: { children : React.ReactNode }) => {
+     
+    const session = await auth.api.getSession({ headers: await headers() });
+
+    if(session?.user) return redirect('/');
+
     return(
             <main className="
              flex flex-col justify-between lg:flex-row h-screen bg-gray-900 relative overflow-hidden
@@ -20,7 +28,7 @@ import Link from "next/link"
                     
             <section className="auth-left-section scrollbar-hide-default">
                 <Link href="/" className="auth-logo">
-                    <Image src="/assets/icons/logo.svg" alt="Signalist logo" width={140} height={32} className='h-8 w-auto' />
+                    <Image src="/assets/icons/logo.svg" alt="StockPilot logo" width={140} height={32} className='h-8 w-auto' />
                 </Link>
 
 

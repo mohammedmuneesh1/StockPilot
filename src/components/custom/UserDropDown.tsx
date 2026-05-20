@@ -4,23 +4,28 @@
 import React from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { useRouter } from 'next/navigation';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, } from '../ui/avatar';
 import { LogOut } from 'lucide-react';
 import NavItems from './NavItems';
+import { SIGN_OUT } from '@/lib/actions/auth.action';
 
-const UserDropDown = () => {
+
+interface UserDropDownInterface{
+    user:{
+      id:string,
+      name:string,
+      email:string
+    } | null;
+}
+const UserDropDown:React.FC<UserDropDownInterface> = ({user}) => {
     const router = useRouter();
 
-    const handleSignout = () => {
+    const handleSignout =async () => {
+        await SIGN_OUT();
         router.push('/sign-in');
     };
 
 
-    const user={
-        name:"John Doe",
-        email:"pH5r9@example.com"
-    }
 
   return (
     <DropdownMenu>

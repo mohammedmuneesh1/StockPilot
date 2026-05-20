@@ -1,0 +1,15 @@
+Daily news summary
+
+
+step-1) schedule the workflow (run every day 12:pm ) retreive all user
+ who need to recieve daily news
+
+
+step-2) each user check their watch list whichstoack they care about ,
+  if stock then pull the news related to if not pull genral news 
+
+step-3)  make more digestable summarize article with AI
+
+step-3) send email with nodemailer as background inngest
+
+
