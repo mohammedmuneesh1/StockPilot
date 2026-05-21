@@ -38,3 +38,16 @@ export const formatArticle = (
   category: isCompanyNews ? 'company' : article.category || 'general',
   related: isCompanyNews ? symbol! : article.related || '',
 });
+
+
+
+export const getFormattedTodayDate = () => new Date().toLocaleDateString('en-US', {
+  //  Thursday, May 21, 2026
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+//  Thursday, May 21, 2026

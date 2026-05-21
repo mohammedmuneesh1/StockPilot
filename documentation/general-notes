@@ -124,3 +124,649 @@ first destructing data from event, then destructuring email and name from data. 
 | Redirect to          |   | Show Error          |
 | Dashboard            |   | Toast Message       |
 +----------------------+   +----------------------+
+
+
+
+
+
+
+
+
+
+//----------------------- 4 NEXT JS CACHING -----------------------
+
+
+2. What is <T> ?
+
+This is a generic type parameter in TypeScript.
+
+fetchJSON<T>
+
+means:
+
+“This function can return ANY type depending on what the caller specifies.”
+
+Think of T as:
+
+a placeholder type
+a variable for types
+
+
+Example:
+
+const data = await fetchJSON<User>(url);
+
+T = User
+
+Promise<User>
+
+
+3. Why Promise<T> ?
+
+The function is async.
+
+All async functions return a Promise.
+Promise<T>
+
+“This function eventually returns a value of type T.”
+
+
+
+
+4. Understanding this line deeply
+const options: RequestInit & { next?: { revalidate?: number } }
+
+This is the most advanced part.
+
+
+RequestInit is a built-in TypeScript type for the fetch() options object.
+
+
+
+
+Example:
+
+
+fetch(url, {
+  method: 'POST',
+  headers: {
+    Authorization: 'token'
+  },
+  cache: 'no-store'
+})
+
+
+All these properties are defined inside RequestInit.
+
+
+
+Common RequestInit properties
+
+
+type RequestInit = {
+  method?: string;
+  headers?: HeadersInit;
+  body?: BodyInit;
+  cache?: RequestCache;
+  credentials?: RequestCredentials;
+  mode?: RequestMode;
+}
+
+
+const options: RequestInit = {
+  cache: 'no-store'
+};
+
+
+6. What does & mean here?
+RequestInit & { next?: { revalidate?: number } }
+
+The & means:
+
+combine two types together
+
+This is called an intersection type.
+
+
+type A = { name: string };
+type B = { age: number };
+
+type C = A & B;
+
+C = {
+  name: string;
+  age: number;
+}
+
+7. So what type is being created here?
+
+RequestInit & {
+  next?: {
+    revalidate?: number
+  }
+}
+
+The object:
+
+has all normal fetch options
+PLUS an optional next property
+
+
+
+8. Why add next?
+
+Because Next.js extends the standard fetch() API.
+
+It supports:
+
+next: {
+  revalidate: number
+}
+
+
+
+This controls ISR (Incremental Static Regeneration).
+
+ {
+   cache: 'force-cache',
+   next: {
+     revalidate: 60
+   }
+ }
+
+ Cache this request and refresh every 60 seconds.
+
+
+
+9. Understanding the ?
+next?: { revalidate?: number }
+
+The ? means optional.
+
+
+IF revalidateSeconds exists:
+
+{
+  cache: 'force-cache',
+  next: {
+    revalidate: revalidateSeconds
+  }
+}
+
+
+ELSE:
+
+{
+  cache: 'no-store'
+}
+
+
+
+Case 1 — Revalidation enabled
+{
+  cache: 'force-cache',
+  next: { revalidate: 60 }
+}
+
+Meaning:
+
+use cache
+regenerate every 60 seconds
+
+Good for:
+
+blogs
+product pages
+dashboards
+
+
+In Next.js, this:
+
+next: { revalidate: 60 }
+
+does NOT mean:
+
+“call the API every 60 seconds automatically”
+
+Instead it means:
+
+“Keep cached data for up to 60 seconds. After that, the NEXT request triggers a background refresh.”
+
+
+This is called stale-while-revalidate behavior.
+
+
+Timeline Example
+
+Suppose this runs at:
+
+fetch(url, {
+  cache: 'force-cache',
+  next: { revalidate: 60 }
+})
+First request (0s)
+
+User visits page.
+
+No cache exists.
+
+So:
+
+API is called
+response is cached
+Second request (20s)
+
+Another user visits.
+
+Since cache is still fresh (< 60s):
+
+NO API call
+cached data returned instantly
+Third request (70s)
+
+Now cache is expired.
+
+Next.js does:
+
+Serve OLD cached data immediately
+Trigger background API fetch
+Update cache with fresh data
+
+So the user usually still gets fast response.
+
+
+Request comes in
+    ↓
+Check cache age
+    ↓
+Fresh? → serve cache
+Expired? → serve stale cache + refresh in background
+
+
+
+Difference from Polling
+Polling
+Every 60 seconds:
+    call API automatically
+
+This happens even if nobody visits.
+
+
+Revalidation
+Only refresh when someone requests after expiry
+
+
+Why cache: 'force-cache' ?
+
+This tells Next.js:
+
+Store this fetch result in cache
+
+Without it:
+
+cache: 'no-store'
+
+means:
+
+Never cache
+Always fetch fresh data
+
+
+fetch(url, {
+  next: { revalidate: 60 }
+})
+
+is mainly a server-side cache in Next.js.
+
+
+If I stay on the page for 60 seconds, will it auto-refresh?
+
+NO.
+
+Nothing happens automatically.
+
+The page does NOT refresh itself.
+
+The API is NOT called automatically.
+
+The cache simply becomes "expired".
+
+
+Suppose:
+
+revalidate: 60
+t = 0 seconds
+
+You open website.
+
+Next.js:
+
+Calls API
+Stores response in server cache
+
+You see data:
+
+Products: Apple, Orange
+t = 30 seconds
+
+You are still on page.
+
+Nothing happens.
+
+No API call.
+
+No refresh.
+
+t = 61 seconds
+
+Still nothing happens automatically.
+
+The cache is now simply marked:
+
+STALE (expired)
+
+But page still doesn't reload.
+
+
+
+What happens IF you refresh now?
+
+Now this is important.
+
+When you refresh at 61 seconds:
+
+Next.js sees:
+
+Cache expired
+
+Then usually:
+
+It serves old cached data immediately
+Starts background revalidation fetch
+Updates cache
+
+because stale cache served first.
+
+Meanwhile Next.js fetches fresh API.
+
+
+Important: Different users/devices
+
+You asked:
+
+Another user is on another device/browser, shouldn’t they get fresh request?
+
+Not necessarily.
+
+Because the cache is often shared at the server/CDN level.
+
+
+User A visits
+
+API called.
+
+Cache stored.
+
+User B visits 10 seconds later
+
+No API call.
+
+They receive same cached response.
+
+Even from another:
+
+device
+browser
+country sometimes (via CDN)
+
+
+
+Why is this done?
+
+Performance.
+
+Instead of:
+
+1000 users = 1000 API calls
+
+you get:
+
+1000 users = maybe 1 API call
+
+
+What if I WANT fresh data every refresh?
+
+Then use:
+
+cache: 'no-store'
+
+Now EVERY request:
+
+every refresh
+every user
+every visit
+
+calls API again.
+
+
+
+Quick Comparison
+Option	API called when?
+no-store	Every request
+revalidate: 60	After cache expires AND a new request comes
+force-cache	Only first time, then forever cached
+
+
+
+Question
+so a quick question. if i visit a website and my api got cached , then i reload the page , so within 60 seconds expiry, so we cache data exist, then we dont go for backend call right
+
+
+fetch(url, {
+  next: { revalidate: 60 }
+})
+
+
+
+First visit
+
+At 12:00:00
+
+You open page.
+
+Next.js:
+
+→ Calls backend API
+→ Stores response in cache
+You refresh at 12:00:20
+
+Only 20 seconds passed.
+
+Cache is still fresh.
+
+So:
+
+→ NO backend API call
+→ Cached data returned
+Refresh again at 12:00:45
+
+Still within 60 seconds.
+
+Again:
+
+→ Uses cache
+→ No backend call
+Refresh at 12:01:10
+
+Now cache expired.
+
+Then:
+
+→ Revalidation process starts
+→ Backend may be called
+
+
+
+Important Clarification
+
+This cache is usually on:
+
+Next.js server
+edge runtime
+CDN/server layer 
+
+
+Within revalidate time:
+    Use cache
+
+After revalidate time:
+    Fetch fresh data on next request
+
+
+
+
+Step 1 — Initial request
+
+At 12:00
+
+User opens page.
+
+Next.js:
+
+→ Calls API
+→ Stores cache
+
+Cached data:
+
+"Learning React"
+Step 2 — Backend changes
+
+At 12:01
+
+Admin updates database:
+
+"Learning React and Next.js"
+
+BUT:
+
+Frontend cache still contains old data.
+
+Step 3 — 60 seconds pass
+
+At 12:02
+
+Cache becomes:
+
+STALE
+
+But NOTHING happens yet.
+
+No API call yet.
+
+Step 4 — Someone visits page
+
+At 12:02:05
+
+A user refreshes page.
+
+NOW Next.js sees:
+
+Cache expired
+
+THEN it:
+
+→ Calls backend API NOW
+→ Gets latest data
+→ Updates cache
+
+New cache:
+
+"Learning React and Next.js"
+
+
+
+THIS is why data changes reflect
+
+NOT because of timer.
+
+But because:
+
+A new request arrived after expiry
+Think of cache like milk expiry
+Milk expires after 60 minutes
+
+Does expired milk automatically replace itself?
+
+No.
+
+Replacement happens only when:
+
+Someone opens fridge and checks it
+
+Same idea.
+
+So technically:
+revalidate = expiration policy
+
+NOT:
+
+background polling scheduler
+Final Simple Rule
+Before 60 sec:
+    serve cache
+
+After 60 sec:
+    next request triggers fresh API fetch
+
+That’s the core behavior.
+
+
+
+
+//----------------------- 5 -----------------------
+
+(s): s is string => Boolean(s)
+
+This is an arrow function.
+
+
+
+ .filter((s:any) => Boolean(s));
+
+ (x): x is number
+
+
+//----------------------- 6 -----------------------
+
+JSON.stringify(value, replacer, space)
+
+value → articles (your array)
+replacer → null (no filtering/transformation)
+space → 2 (indent using 2 spaces)
+
+[{"title":"A","id":1},{"title":"B","id":2}]
+
+
+[
+  {
+    "title": "A",
+    "id": 1
+  },
+  {
+    "title": "B",
+    "id": 2
+  }
+]
+
+pretty JSON:
+
+-> is easier for an LLM to read
+-> preserves structure clearly
+-> improves parsing and summarization quality
+
+
+You could change 2 to:
+
+0 → compact (no spaces)
+2 → common readable format
+4 → even more indented

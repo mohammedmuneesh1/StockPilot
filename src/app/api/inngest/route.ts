@@ -1,9 +1,12 @@
 import {serve} from "inngest/next"
 import { inngest } from "@/lib/inngest/client" 
-import { sendSignUpEmail } from "@/lib/inngest/function";
+import { sendDailyNewsSummary, sendSignUpEmail } from "@/lib/inngest/function";
 export const {GET,POST,PUT}  = serve({
     client: inngest,
-    functions:[sendSignUpEmail] , // backgorund jobs , the function that will run in the background when triggered by an event or workflow in inngest
+    functions:[
+        sendSignUpEmail,
+        sendDailyNewsSummary
+    ] , // backgorund jobs , the function that will run in the background when triggered by an event or workflow in inngest
 });
 
 //essentially exposing inngest function via next js api route 

@@ -1,8 +1,10 @@
+import { getNews } from "../actions/finhub.actions";
 import { getAllUsersForNewsEmail } from "../actions/user.action";
 import { getWatchlistSymbolsByEmail } from "../actions/watchlist.action";
-import { sendWelcomeEmail } from "../nodemailer";
+import { sendNewsSummaryEmail, sendWelcomeEmail } from "../nodemailer";
+import { getFormattedTodayDate } from "../utils";
 import { inngest } from "./client";
-import { PERSONALIZED_WELCOME_EMAIL_PROMPT } from "./prompts";
+import { NEWS_SUMMARY_EMAIL_PROMPT, PERSONALIZED_WELCOME_EMAIL_PROMPT } from "./prompts";
 
 //=-------------------------- EMAIL TO SEND SIGNUP WELCOME MESSAGE WITH PERSONALIZATION USING GEMINI AI MODEL START --------------------------=//
 export const sendSignUpEmail = inngest.createFunction(
@@ -74,39 +76,35 @@ export const sendSignUpEmail = inngest.createFunction(
 
 //=-------------------------- SEND DAILY NEWS SUMMER START --------------------------=//
 
+
+
 export const sendDailyNewsSummary = inngest.createFunction(
-    { id: 'daily-news-summary',
+        { id: 'daily-news-summary',
     triggers: [
-      { event: "app/user.created" },
-      { cron: "0 12 * * *" },
+      { event: "app/send.daily.news" },
+    //   { cron: "0 12 * * *" },
+      { cron: "*/2 * * * *" },
     ],
   },
+
     async ({ step }) => {
-
-
-        /*⚠️STEPS START⚠️ */
-        //STEP-1: GET ALL USERS FOR NEWS DELIVERY 
-        //STEP-2: FETCH PERSONALIZED NEWS FOR EACH USER
-        //STEP-3 : SUMMARIZE NEWS VIA AI FOR EACH USER 
-        //STEP-4 : SEND EMAIL 
-        /*⚠️STEPS END⚠️ */
-
-
-
         // Step #1: Get all users for news delivery
-        const users = await step.run('get-all-users', getAllUsersForNewsEmail);
+        const users = await step.run('get-all-users', getAllUsersForNewsEmail)
+
         if(!users || users.length === 0) return { success: false, message: 'No users found for news email' };
 
-        // Step #2: For each user, get watchlist symbols -> fetch news (fallback to general)
+        // Step #2 START: For each user, get watchlist symbols -> fetch news (fallback to general)
         const results = await step.run('fetch-user-news', async () => {
+            // const perUser: Array<{ user: UserForNewsEmail; articles: MarketNewsArticle[] }> = [];
+           //eslint-disable-next-line
+            const perUser: Array<{ user: any; articles: MarketNewsArticle[] }> = [];
 
-            const perUser: Array<{ user: UserForNewsEmail; articles: MarketNewsArticle[] }> = [];
-             // 
-
-            for (const user of users as UserForNewsEmail[]) {
+              //eslint-disable-next-line
+            for (const perUser of users as any[]) {
                 try {
-                    const symbols = await getWatchlistSymbolsByEmail(user.email);
-                    let articles = await getNews(symbols);
+                    const symbols = await getWatchlistSymbolsByEmail(perUser.email); // return symbols -> ["AAPL", "TSLA"]
+                    let articles = await getNews(symbols); // return news articles related to those symbols. 
+                    // If no symbols or no news for those symbols, return general news
                     // Enforce max 6 articles per user
                     articles = (articles || []).slice(0, 6);
                     // If still empty, fallback to general
@@ -114,21 +112,24 @@ export const sendDailyNewsSummary = inngest.createFunction(
                         articles = await getNews();
                         articles = (articles || []).slice(0, 6);
                     }
-                    perUser.push({ user, articles });
+                    perUser.push({ perUser, articles });
                 } catch (e) {
-                    console.error('daily-news: error preparing user news', user.email, e);
-                    perUser.push({ user, articles: [] });
+                    console.error('daily-news: error preparing user news', perUser.email, e);
+                    perUser.push({ perUser, articles: [] });
                 }
             }
             return perUser;
-        });
+        }); // result will contain [{ user: {email, name}, articles: [] }]
+
+        //STEP-2 END: 
 
         // Step #3: (placeholder) Summarize news via AI
-        const userNewsSummaries: { user: UserForNewsEmail; newsContent: string | null }[] = [];
-
+        //eslint-disable-next-line
+        const userNewsSummaries: { user: any; newsContent: string | null }[] = [];
         for (const { user, articles } of results) {
                 try {
-                    const prompt = NEWS_SUMMARY_EMAIL_PROMPT.replace('{{newsData}}', JSON.stringify(articles, null, 2));
+                    const prompt = NEWS_SUMMARY_EMAIL_PROMPT.replace('{{newsData}}', JSON.stringify(articles, null, 2)); //injecting news data into prompt
+
 
                     const response = await step.ai.infer(`summarize-news-${user.email}`, {
                         model: step.ai.models.gemini({ model: 'gemini-2.5-flash-lite' }),
@@ -138,7 +139,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
                     });
 
                     const part = response.candidates?.[0]?.content?.parts?.[0];
-                    const newsContent = (part && 'text' in part ? part.text : null) || 'No market news.'
+                    const newsContent = (part && 'text' in part ? part.text : null) || 'No market news.' //in checking on object
 
                     userNewsSummaries.push({ user, newsContent });
                 } catch (e) {
@@ -147,22 +148,22 @@ export const sendDailyNewsSummary = inngest.createFunction(
                 }
             }
 
+
         // Step #4: (placeholder) Send the emails
         await step.run('send-news-emails', async () => {
                 await Promise.all(
                     userNewsSummaries.map(async ({ user, newsContent}) => {
                         if(!newsContent) return false;
-
-                        return await sendNewsSummaryEmail({ email: user.email, date: getFormattedTodayDate(), newsContent })
+                        return await sendNewsSummaryEmail({ 
+                            email: user.email,
+                             date: getFormattedTodayDate(),
+                              newsContent })
                     })
                 )
             })
-
         return { success: true, message: 'Daily news summary emails sent successfully' }
     }
 )
-
-
 
 //=-------------------------- SEND DAILY NEWS SUMMER END --------------------------=//
 
