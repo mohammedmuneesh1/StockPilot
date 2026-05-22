@@ -16,8 +16,9 @@ interface UserDropDownInterface{
       name:string,
       email:string
     } | null;
+    onSearchClick?: () => void;
 }
-const UserDropDown:React.FC<UserDropDownInterface> = ({user}) => {
+const UserDropDown:React.FC<UserDropDownInterface> = ({user, onSearchClick}) => {
     const router = useRouter();
 
     const handleSignout =async () => {
@@ -106,7 +107,7 @@ const UserDropDown:React.FC<UserDropDownInterface> = ({user}) => {
                 <DropdownMenuSeparator className='bg-gray-600'/>
 
                 <nav className='sm:hidden'>
-                    <NavItems/>
+                    <NavItems onSearchClick={onSearchClick} />
                 </nav>
       
         </DropdownMenuContent>

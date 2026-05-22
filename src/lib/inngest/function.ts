@@ -82,8 +82,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
         { id: 'daily-news-summary',
     triggers: [
       { event: "app/send.daily.news" },
-    //   { cron: "0 12 * * *" },
-      { cron: "*/2 * * * *" },
+      { cron: "0 12 * * *" },
     ],
   },
 

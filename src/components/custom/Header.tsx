@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import NavItems from './NavItems'
+import SearchDialog from './SearchDialog'
 import UserDropDown from './UserDropDown'
 
 
@@ -15,11 +16,15 @@ interface HeaderInterface {
   } | null;
 }
 const Header:React.FC<HeaderInterface> = ({user}) => {
-  
+  const [searchOpen, setSearchOpen] = React.useState(false)
 
-  
+  const handleOpenSearch = () => {
+    setSearchOpen(true)
+  }
+
   return (
-    <div className='sticky top-0 header'>
+    <>
+      <div className='sticky top-0 header'>
         <div className="container header-wrapper"> 
 
 <Link href="/">
@@ -35,22 +40,24 @@ height={32}
 
 {/*LARGE SCREEN NAV START */}
 <nav className="hidden sm:block">
-    <NavItems/>
+    <NavItems onSearchClick={handleOpenSearch} />
 </nav>
 {/*LARGE SCREEN NAV END */}
 
 {/*SMALL SCREEN NAV START */}
 <div className="block">
-<UserDropDown
-user={user}
-/>
+  <UserDropDown
+    user={user}
+    onSearchClick={handleOpenSearch}
+  />
 </div>
 {/*SMALL SCREEN NAV END */}
 
-
         </div>
+      </div>
 
-    </div>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+    </>
   )
 }
 

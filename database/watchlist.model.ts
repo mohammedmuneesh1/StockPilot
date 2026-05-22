@@ -5,6 +5,7 @@ export interface WatchlistItem extends Document {
   symbol: string;
   company: string;
   addedAt: Date;
+  alertThreshold?: number;
 }
 
 const WatchlistSchema = new Schema<WatchlistItem>(
@@ -18,6 +19,7 @@ const WatchlistSchema = new Schema<WatchlistItem>(
           description:"symbol here means the stock ticker symbol. Company	Symbol Apple   --->	AAPL",
     },
     company: { type: String, required: true, trim: true },
+    alertThreshold: { type: Number, required: false },
     addedAt: { type: Date, default: Date.now },
   },
   { timestamps: false }

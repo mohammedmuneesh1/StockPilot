@@ -139,7 +139,8 @@ declare global {
         userId: string;
         symbol: string;
         company: string;
-        addedAt: Date;
+        addedAt: string | Date;
+        alertThreshold?: number;
         currentPrice?: number;
         changePercent?: number;
         priceFormatted?: string;

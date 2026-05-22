@@ -51,3 +51,14 @@ export const getFormattedTodayDate = () => new Date().toLocaleDateString('en-US'
 });
 
 //  Thursday, May 21, 2026
+
+
+
+export function formatMarketCapValue(marketCapUsd: number): string {
+  if (!Number.isFinite(marketCapUsd) || marketCapUsd <= 0) return 'N/A';
+
+  if (marketCapUsd >= 1e12) return `$${(marketCapUsd / 1e12).toFixed(2)}T`; // Trillions
+  if (marketCapUsd >= 1e9) return `$${(marketCapUsd / 1e9).toFixed(2)}B`; // Billions
+  if (marketCapUsd >= 1e6) return `$${(marketCapUsd / 1e6).toFixed(2)}M`; // Millions
+  return `$${marketCapUsd.toFixed(2)}`; // Below one million, show full USD amount
+}

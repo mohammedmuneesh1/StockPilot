@@ -23,7 +23,6 @@ const HomeLayout =async ({
       name: session.user.name,
       email: session.user.email,
     }
-console.log('uiser',user)
 
   return (
   <main className="min-h-screen text-gray-400">
